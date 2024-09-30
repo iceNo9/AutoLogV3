@@ -2,7 +2,7 @@
 Author: CPBook 3222973652@qq.com
 Date: 2024-09-30 08:43:47
 LastEditors: CPBook 3222973652@qq.com
-LastEditTime: 2024-09-30 17:01:54
+LastEditTime: 2024-09-30 17:48:00
 FilePath: \AutoLogV3\Client\client_main.py
 Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 '''
@@ -131,19 +131,21 @@ class Command:
             if not self.message_queue.empty():
                 message = self.message_queue.get()
                 self.logger.debug(f'Parse Message: {message}')
-
-                command = message.get('cmd')
-                if command == 'start':
-                    # self.working = True
-                    # self.tab.start()
-                elif command == 'stop':
-                    # self.tab.stop()
-                    # self.working = False
-                elif command == 'init':
-                    # filepath = message.get('filepath')
-                    # filename = message.get('filename')
-                    # self.log(f"Executing config command with filepath: {filepath}, filename: {filename}")
-                    # self.tab.set_work_session_config_path(filepath, filename)
+                data = json.loads(message)
+                cmd = data['cmd']
+                para = data['para']
+                
+                if cmd == 'start':                    
+                    self.crt.start_log()
+                    self.status_manager.loging = True
+                elif cmd == 'stop':
+                    self.crt.stop_log
+                    self.status_manager.loging = False
+                elif cmd == 'init':
+                    com_list = para[0]
+                    filepath = para[1]
+                    self.logger.debug(f"Recv Path:{filepath}")
+                    self.crt.open_tab(com_list,filepath)
                 else:
                     self.log(f"Unknown Message: {message}")
 
@@ -221,11 +223,7 @@ class SCRTControl:
         for objTab in self.tab_list:
             if objTab.Session.Logging
                 objectTab.Session.Log(False)
-
-
-
-    
-
+ 
 
 # 状态管理模块
 class StatusManager:
@@ -233,8 +231,8 @@ class StatusManager:
         self.logger = rv_logger
 
         self.socket_connected = False
+        self.loging = False
 
-        self.working = False #False means Not Work
         self.logger.info("StatusManager Initiated")
 
 
